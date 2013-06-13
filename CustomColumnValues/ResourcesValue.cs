@@ -22,9 +22,15 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             foreach (HPMResourceDefinition resourceDefinition in resourceList.m_Resources)
             {
                 if (resourceDefinition.m_GroupingType == EHPMResourceGroupingType.Resource)
-                    resources.Add(User.GetUser(resourceDefinition.m_ID));
+                {
+                    if (SessionManager.Session.UtilIsIDValid(resourceDefinition.m_ID))
+                        resources.Add(User.GetUser(resourceDefinition.m_ID));
+                }
                 else if (resourceDefinition.m_GroupingType == EHPMResourceGroupingType.ResourceGroup)
-                    resources.Add(Group.GetGroup(resourceDefinition.m_ID));
+                {
+                    if (SessionManager.Session.UtilIsIDValid(resourceDefinition.m_ID))
+                        resources.Add(Group.GetGroup(resourceDefinition.m_ID));
+                }
                 else if (resourceDefinition.m_GroupingType == EHPMResourceGroupingType.AllProjectMembers)
                     resources.Add(AllProjectMembers.Instance);
             }

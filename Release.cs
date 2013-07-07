@@ -273,6 +273,10 @@ namespace Hansoft.ObjectWrapper
             }
         }
 
+        
+        /// <summary>
+        /// The burndown history for a release, normalized so that one value per day is provided.
+        /// </summary>
         public class NormalizedBurndownHistory
         {
             DateTime start;
@@ -289,26 +293,43 @@ namespace Hansoft.ObjectWrapper
                 values = new double[length];
             }
 
+            /// <summary>
+            /// The value of the release burndown for a particular day.
+            /// </summary>
+            /// <param name="day">The day to get the bunrndown value for.</param>
+            /// <returns>THe burndown value.</returns>
             public double ValueAt(DateTime day)
             {
                 return values[(day.Date - start).Days];
             }
 
+            /// <summary>
+            /// The number of days in the burndown.
+            /// </summary>
             public int Length
             {
                 get { return length; }
             }
 
+            /// <summary>
+            /// The first day in the burndown.
+            /// </summary>
             public DateTime Start
             {
                 get { return start; }
             }
 
+            /// <summary>
+            /// The last day in the burndown.
+            /// </summary>
             public DateTime End
             {
                 get { return end; }
             }
 
+            /// <summary>
+            /// The value for each day in the burndown.
+            /// </summary>
             public double[] Values
             {
                 get { return values; }

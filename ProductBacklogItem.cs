@@ -29,6 +29,17 @@ namespace Hansoft.ObjectWrapper
         }
 
         /// <summary>
+        /// The project view that this product backlog item belongs to.
+        /// </summary>
+        public override ProjectView ProjectView
+        {
+            get
+            {
+                return Project.ProductBacklog;
+            }
+        }
+
+        /// <summary>
         /// The list of users that are assigned to this product backlog item.
         /// </summary>
         public List<User> Assignees
@@ -83,6 +94,20 @@ namespace Hansoft.ObjectWrapper
             set
             {
                 if (Priority != value) Session.TaskSetBacklogPriority(UniqueTaskID, (EHPMTaskAgilePriorityCategory)value.Value);
+            }
+        }
+
+
+        private int absolutePriority;
+        internal int AbsolutePriority
+        {
+            get
+            {
+                return absolutePriority;
+            }
+            set
+            {
+                absolutePriority = value;
             }
         }
     }

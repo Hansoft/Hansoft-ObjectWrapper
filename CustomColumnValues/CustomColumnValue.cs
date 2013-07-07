@@ -149,9 +149,17 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             }
         }
 
-        internal abstract long ToInt();
+        /// <summary>
+        /// Convert (if needed) the underlying value to an integer value.
+        /// </summary>
+        /// <returns>The integer value.</returns>
+        public abstract long ToInt();
 
-        internal abstract double ToDouble();
+        /// <summary>
+        /// Convert (if needed) the underlying value to a double value.
+        /// </summary>
+        /// <returns>The double value</returns>
+        public abstract double ToDouble();
 
         /// <summary>
         /// IConvertible override, returns TypeCode.Object.

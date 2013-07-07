@@ -36,6 +36,17 @@ namespace Hansoft.ObjectWrapper
         }
 
         /// <summary>
+        /// The project view that this bug belongs to.
+        /// </summary>
+        public override ProjectView ProjectView
+        {
+            get
+            {
+                return Project.BugTracker;
+            }
+        }
+
+        /// <summary>
         /// The list of users that are assigned to this Bug.
         /// </summary>
         public List<User> Assignees

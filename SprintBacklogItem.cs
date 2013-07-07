@@ -24,6 +24,17 @@ namespace Hansoft.ObjectWrapper
         }
 
         /// <summary>
+        /// The project view that this sprint backlog item belongs to.
+        /// </summary>
+        public override ProjectView ProjectView
+        {
+            get
+            {
+                return Project.Schedule;
+            }
+        }
+
+        /// <summary>
         /// The list of users that are assigned to this sprint backlog item.
         /// </summary>
         public List<User> Assignees

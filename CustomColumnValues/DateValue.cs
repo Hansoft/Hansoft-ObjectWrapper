@@ -11,7 +11,7 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
     /// <summary>
     /// Encapsulates a tasks value for custom column of date type.
     /// </summary>
-    class DateValue : CustomColumnValue
+    public class DateValue : CustomColumnValue
     {
         private ulong hpmDateTime;
 
@@ -21,14 +21,28 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return new DateValue(task, customColumn, internalValue, hpmDateTime);
         }
 
-        internal static DateValue FromHpmDateTime(Task task, HPMProjectCustomColumnsColumn customColumn, ulong hpmDateTime)
+        /// <summary>
+        /// Create a new instance from an internal value belonging to a certain task and custom column.
+        /// </summary>
+        /// <param name="task">The task the value belongs to.</param>
+        /// <param name="customColumn">The custom column the value belongs to.</param>
+        /// <param name="hpmDateTime">The internal Hansoft time value.</param>
+        /// <returns>The new instance.</returns>
+        public static DateValue FromHpmDateTime(Task task, HPMProjectCustomColumnsColumn customColumn, ulong hpmDateTime)
         {
             string internalValue;
             internalValue = SessionManager.Session.UtilEncodeCustomColumnDateTimeValue(hpmDateTime);
             return new DateValue(task, customColumn, internalValue, hpmDateTime);
         }
 
-        internal static DateValue FromDateTime(Task task, HPMProjectCustomColumnsColumn customColumn, DateTime dateTime)
+        /// <summary>
+        /// Crate a new instance from a DateTime value for a certain task and custom column.
+        /// </summary>
+        /// <param name="task">The task the value belongs to.</param>
+        /// <param name="customColumn">The custom column the value belongs to.</param>
+        /// <param name="dateTime">The DateTime value</param>
+        /// <returns>The new instance.</returns>
+        public static DateValue FromDateTime(Task task, HPMProjectCustomColumnsColumn customColumn, DateTime dateTime)
         {
             return FromHpmDateTime(task, customColumn, HPMUtilities.HPMDateTime(dateTime, true));
         }
@@ -54,21 +68,47 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
 
         }
 
-        internal override long ToInt()
-        {
-            return (long)hpmDateTime;
-        }
-
-        internal override double ToDouble()
+        /// <summary>
+        /// The value as a Hansoft time value, i.e., microseconds since Jan 1 1970 UTC.
+        /// </summary>
+        /// <returns>The value</returns>
+        public ulong ToHpmDateTime()
         {
             return hpmDateTime;
         }
 
+        /// <summary>
+        /// The value as a Hansoft time value, i.e., microseconds since Jan 1 1970 UTC.
+        /// </summary>
+        /// <returns>The value</returns>
+        public override long ToInt()
+        {
+            return (long)hpmDateTime;
+        }
+
+        /// <summary>
+        /// The value as a Hansoft time value, i.e., microseconds since Jan 1 1970 UTC.
+        /// </summary>
+        /// <returns>The value</returns>
+        public override double ToDouble()
+        {
+            return hpmDateTime;
+        }
+
+        /// <summary>
+        /// The value as a DateTime value, with the provided IFormatProvider
+        /// </summary>
+        /// <param name="provider">An IFormatProvider</param>
+        /// <returns>The DateTime value.</returns>
         public override DateTime ToDateTime(IFormatProvider provider)
         {
             return ToDateTime();
         }
 
+        /// <summary>
+        /// Returns the value as a DateTime value.
+        /// </summary>
+        /// <returns>The DateTime value.</returns>
         public DateTime ToDateTime()
         {
             return HPMUtilities.FromHPMDateTime(hpmDateTime);

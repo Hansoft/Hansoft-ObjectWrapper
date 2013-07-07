@@ -11,7 +11,7 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
     /// <summary>
     /// Encapsulates a tasks value for custom column of multiple line text type.
     /// </summary>
-    class MultilineTextValue : TextValue
+    public class MultilineTextValue : TextValue
     {
         internal MultilineTextValue(Task task, HPMProjectCustomColumnsColumn customColumn, string internalValue)
             : base(task, customColumn, internalValue)

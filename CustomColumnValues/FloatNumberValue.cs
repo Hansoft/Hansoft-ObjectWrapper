@@ -11,7 +11,7 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
     /// <summary>
     /// Encapsulates a tasks value for custom column of float type.
     /// </summary>
-    class FloatNumberValue : CustomColumnValue
+    public class FloatNumberValue : CustomColumnValue
     {
         private double floatValue;
 
@@ -45,12 +45,20 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return InternalValue;
         }
 
-        internal override long ToInt()
+        /// <summary>
+        /// The float number truncated.
+        /// </summary>
+        /// <returns>The truncated number</returns>
+        public override long ToInt()
         {
             return (long)floatValue;
         }
 
-        internal override double ToDouble()
+        /// <summary>
+        /// The underlying float value.
+        /// </summary>
+        /// <returns>The underlying float value.</returns>
+        public override double ToDouble()
         {
             return floatValue;
         }

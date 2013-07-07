@@ -24,7 +24,42 @@ namespace Hansoft.ObjectWrapper
         }
 
         /// <summary>
-        /// Not suppoprted for Sprints
+        /// The project view that this sprint belongs to.
+        /// </summary>
+        public override ProjectView ProjectView
+        {
+            get
+            {
+                return Project.Schedule;
+            }
+        }
+
+        /// <summary>
+        /// The first day in the sprint
+        /// </summary>
+        public DateTime Start
+        {
+            get
+            {
+                HPMTaskTimeZones tzData = Session.TaskGetTimeZones(UniqueTaskID);
+                return HPMUtilities.FromHPMDateTime(tzData.m_Zones[0].m_Start);
+            }
+        }
+
+        /// <summary>
+        /// The last day in the sprint
+        /// </summary>
+        public DateTime End
+        {
+            get
+            {
+                HPMTaskTimeZones tzData = Session.TaskGetTimeZones(UniqueTaskID);
+                return HPMUtilities.FromHPMDateTime(tzData.m_Zones[0].m_End);
+            }
+        }
+
+        /// <summary>
+        /// Not supported for Sprints
         /// </summary>
         public override HansoftEnumValue Priority
         {

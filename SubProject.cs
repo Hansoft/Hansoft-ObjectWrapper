@@ -24,6 +24,17 @@ namespace Hansoft.ObjectWrapper
         }
 
         /// <summary>
+        /// The project view that this subproject belongs to.
+        /// </summary>
+        public override ProjectView ProjectView
+        {
+            get
+            {
+                return Project.Schedule;
+            }
+        }
+
+        /// <summary>
         /// Not supported for SubProjects.
         /// </summary>
         public override HansoftEnumValue Priority

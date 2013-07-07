@@ -11,7 +11,7 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
     /// <summary>
     /// Encapsulates a tasks value for custom column of single selection type.
     /// </summary>
-    class SingleSelectionValue : CustomColumnValue
+    public class SingleSelectionValue : CustomColumnValue
     {
         private int selection;
 
@@ -46,12 +46,12 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return HPMUtilities.DecodeDroplistValue((int)selection, CustomColumn.m_DropListItems);
         }
 
-        internal override long ToInt()
+        public override long ToInt()
         {
             return selection;
         }
 
-        internal override double ToDouble()
+        public override double ToDouble()
         {
             return selection;
         }

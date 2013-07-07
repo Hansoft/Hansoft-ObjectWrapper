@@ -69,7 +69,7 @@ namespace Hansoft.ObjectWrapper
 
         internal static Sprint GetCommittedToSprint(Task task) 
         {
-        HPMUniqueID uid = Session.TaskGetLinkedToSprint(task.UniqueID);
+        HPMUniqueID uid = Session.TaskGetLinkedToSprint(task.UniqueTaskID);
         if (uid.m_ID != -1)
             return (Sprint) Task.GetTask(uid);
         else

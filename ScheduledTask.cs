@@ -23,6 +23,17 @@ namespace Hansoft.ObjectWrapper
         }
 
         /// <summary>
+        /// The project view that this scheduled task belongs to.
+        /// </summary>
+        public override ProjectView ProjectView
+        {
+            get
+            {
+                return Project.Schedule;
+            }
+        }
+
+        /// <summary>
         /// The list of users that are assigned to this scheduled task.
         /// </summary>
         public List<User> Assignees

@@ -179,11 +179,11 @@ namespace Hansoft.ObjectWrapper
         /// <summary>
         /// Will return all items (recursively) in the Schedule view
         /// </summary>
-        public List<Task> AgileItems
+        public IEnumerable<Task> AgileItems
         {
             get
             {
-                return Schedule.Find("");
+                return Schedule.DeepChildren.Cast<Task>();
             }
         }
 
@@ -205,26 +205,22 @@ namespace Hansoft.ObjectWrapper
         /// <summary>
         /// Will return all items (recursively) in the Schedule view
         /// </summary>
-        public List<Task> ScheduledItems
+        public IEnumerable<Task> ScheduledItems
         {
             get
             {
-                return Schedule.Find("");
+                return Schedule.DeepChildren.Cast<Task>();
             }
         }
 
         /// <summary>
         /// Will return all items (recursively) in the Product Backlog view
         /// </summary>
-        public List<ProductBacklogItem> ProductBacklogItems
+        public IEnumerable<ProductBacklogItem> ProductBacklogItems
         {
             get
             {
-                List<Task> items = ProductBacklog.Find("");
-                List<ProductBacklogItem> backlogItems = new List<ProductBacklogItem>();
-                foreach (HansoftItem t in items)
-                    backlogItems.Add((ProductBacklogItem)t);
-                return backlogItems;
+                return ProductBacklog.DeepChildren.Cast<ProductBacklogItem>();
             }
         }
 
@@ -270,6 +266,55 @@ namespace Hansoft.ObjectWrapper
                     if (t is ScheduledTask)
                         found.Add((ScheduledTask)t);
                 return found;
+            }
+        }
+
+        /// <summary>
+        /// Checks if a certain date in the project is a working day according to the project calendar.
+        /// </summary>
+        /// <param name="date">The date to check.</param>
+        /// <returns>true if date is a working day in the project otherwise false.</returns>
+        public bool IsWorkingDay(DateTime date)
+        {
+            HPMCalendarDayInfo info = Session.ProjectGetCalendarDayInfo(UniqueID, -1, HPMUtilities.HPMDateTime(date.Date));
+            return info.m_bWorkingDay;
+        }
+
+        /// <summary>
+        /// Get the previous working based on the project calendar.
+        /// </summary>
+        /// <param name="day">The day to get the previous day for.</param>
+        /// <returns>The previous day.</returns>
+        public DateTime GetPreviousWorkingDay(DateTime day)
+        {
+            DateTime previousDay = day.AddDays(-1);
+            while (!IsWorkingDay(previousDay))
+                previousDay = previousDay.AddDays(-1);
+            return previousDay;
+        }
+
+        /// <summary>
+        /// Get the sprint prediction method in number of days as set in the project options.
+        /// </summary>
+        public int AverageVelocitySpan
+        {
+            get
+            {
+                EHPMProjectSprintPredictionMethod method = Session.ProjectGetSettings(UniqueID).m_SprintPredictionMethod;
+                switch (method)
+                {
+                    case EHPMProjectSprintPredictionMethod.N3Days_WeightedAverage:
+                        return 3;
+                    case EHPMProjectSprintPredictionMethod.N5Days_WeightedAverage:
+                        return 5;
+                    case EHPMProjectSprintPredictionMethod.N7Days_WeightedAverage:
+                        return 7;
+                    case EHPMProjectSprintPredictionMethod.N10Days_WeightedAverage:
+                        return 10;
+                    case EHPMProjectSprintPredictionMethod.N14Days_WeightedAverage:
+                    default:
+                        return 14;
+                }
             }
         }
     }

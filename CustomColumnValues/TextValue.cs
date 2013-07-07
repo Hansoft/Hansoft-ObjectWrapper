@@ -11,7 +11,7 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
     /// <summary>
     /// Encapsulates a tasks value for custom column of text type.
     /// </summary>
-    class TextValue : CustomColumnValue
+    public class TextValue : CustomColumnValue
     {
 
         internal static new TextValue FromInternalValue(Task task, HPMProjectCustomColumnsColumn customColumn, string internalValue)
@@ -38,7 +38,7 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return InternalValue;
         }
 
-        internal override long ToInt()
+        public override long ToInt()
         {
             long iVal;
             if (!Int64.TryParse(InternalValue, out iVal))
@@ -46,7 +46,7 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return iVal;
         }
 
-        internal override double ToDouble()
+        public override double ToDouble()
         {
             double dVal;
             if (!Double.TryParse(InternalValue,System.Globalization.NumberStyles.Float, new System.Globalization.CultureInfo("en-US"), out dVal))

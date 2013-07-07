@@ -14,6 +14,52 @@ namespace Hansoft.ObjectWrapper
     public static class HPMUtilities
     {
 
+        #region Backlog Priority
+
+        internal static List<ProductBacklogItem> SortByPriority(Project project, List<ProductBacklogItem> unsorted)
+        {
+            List<ProductBacklogItem> sorted = new List<ProductBacklogItem>();
+            foreach (ProductBacklogItem anItem in unsorted)
+            {
+                if (anItem is ProductBacklogItemInSprint || anItem is ProductBacklogItemInSchedule)
+                    sorted.Add((ProductBacklogItem)Task.GetTask(anItem.Session.TaskGetMainReference(anItem.UniqueTaskID)));
+                else
+                    sorted.Add(anItem);
+            }
+
+            List<HansoftItem> sortedBacklog = new List<HansoftItem>();
+            List<HansoftItem> allLeaves = project.ProductBacklog.DeepLeaves;
+            ProductBacklogItem item = (ProductBacklogItem)allLeaves.Find(leaf => !allLeaves.Exists(prevLeaf => prevLeaf.Session.TaskRefGetPreviousWorkPriorityID(prevLeaf.UniqueID).m_ID == leaf.UniqueID.m_ID));
+            sortedBacklog.Add(item);
+            HPMUniqueID nextId = item.Session.TaskRefGetPreviousWorkPriorityID(item.UniqueID);
+            while (nextId != -2)
+            {
+                item = (ProductBacklogItem)Task.GetTask(nextId);
+                sortedBacklog.Add(item);
+                nextId = item.Session.TaskRefGetPreviousWorkPriorityID(item.UniqueID);
+            }
+            // Now we have the items sorted from low to high so let us reverse...
+            //sortedBacklog.Reverse();
+            foreach (ProductBacklogItem aItem in sorted)
+                aItem.AbsolutePriority = sortedBacklog.FindIndex(ii => ii.UniqueID.m_ID == aItem.UniqueID.m_ID);
+
+            PriorityComparer comparer = new PriorityComparer();
+            sorted.Sort(comparer);
+            sorted.Reverse();
+
+            return sorted;
+        }
+
+        private class PriorityComparer: IComparer<ProductBacklogItem>
+        {
+            public int Compare(ProductBacklogItem x, ProductBacklogItem y)
+            {
+                return x.AbsolutePriority-y.AbsolutePriority;
+            }
+        }
+
+        #endregion
+
         #region Project Level
 
         /// <summary>

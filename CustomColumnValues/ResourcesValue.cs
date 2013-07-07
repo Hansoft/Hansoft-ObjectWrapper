@@ -11,7 +11,7 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
     /// <summary>
     /// Encapsulates a tasks value for custom column of resources/people type.
     /// </summary>
-    class ResourcesValue : CustomColumnValue
+    public class ResourcesValue : CustomColumnValue
     {
         private List<Resource> resources;
 
@@ -72,12 +72,12 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return ListUtils.ToString(new List<HansoftItem>(resources), ';');
         }
 
-        internal override long ToInt()
+        public override long ToInt()
         {
             throw new NotImplementedException();
         }
 
-        internal override double ToDouble()
+        public override double ToDouble()
         {
             throw new NotImplementedException();
         }

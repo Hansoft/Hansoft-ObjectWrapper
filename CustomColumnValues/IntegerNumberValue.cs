@@ -11,7 +11,7 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
     /// <summary>
     /// Encapsulates a tasks value for custom column of integer type.
     /// </summary>
-    class IntegerNumberValue : CustomColumnValue
+    public class IntegerNumberValue : CustomColumnValue
     {
         private long integerValue;
 
@@ -45,12 +45,12 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return InternalValue;
         }
 
-        internal override long ToInt()
+        public override long ToInt()
         {
             return integerValue;
         }
 
-        internal override double ToDouble()
+        public override double ToDouble()
         {
             throw new NotImplementedException();
         }

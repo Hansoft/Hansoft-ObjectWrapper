@@ -11,24 +11,42 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
     /// <summary>
     /// Encapsulates a tasks value for custom column of date and time type.
     /// </summary>
-    class DateTimeValue : CustomColumnValue
+    public class DateTimeValue : CustomColumnValue
     {
         private ulong hpmDateTime;
 
         internal static new DateTimeValue FromInternalValue(Task task, HPMProjectCustomColumnsColumn customColumn, string internalValue)
         {
-            ulong hpmDateTime = SessionManager.Session.UtilDecodeCustomColumnDateTimeValue(internalValue);
+            ulong hpmDateTime;
+            if (internalValue != "")
+                hpmDateTime = SessionManager.Session.UtilDecodeCustomColumnDateTimeValue(internalValue);
+            else
+                hpmDateTime = 0;
             return new DateTimeValue(task, customColumn, internalValue, hpmDateTime);
         }
 
-        internal static DateTimeValue FromHpmDateTime(Task task, HPMProjectCustomColumnsColumn customColumn, ulong hpmDateTime)
+        /// <summary>
+        /// Create a new instance from an internal value belonging to a certain task and custom column.
+        /// </summary>
+        /// <param name="task">The task the value belongs to.</param>
+        /// <param name="customColumn">The custom column the value belongs to.</param>
+        /// <param name="hpmDateTime">The internal Hansoft time value.</param>
+        /// <returns>The new instance.</returns>
+        public static DateTimeValue FromHpmDateTime(Task task, HPMProjectCustomColumnsColumn customColumn, ulong hpmDateTime)
         {
             string internalValue;
             internalValue = SessionManager.Session.UtilEncodeCustomColumnDateTimeValue(hpmDateTime);
             return new DateTimeValue(task, customColumn, internalValue, hpmDateTime);
         }
 
-        internal static DateTimeValue FromDateTime(Task task, HPMProjectCustomColumnsColumn customColumn, DateTime dateTime)
+        /// <summary>
+        /// Crate a new instance from a DateTime value for a certain task and custom column.
+        /// </summary>
+        /// <param name="task">The task the value belongs to.</param>
+        /// <param name="customColumn">The custom column the value belongs to.</param>
+        /// <param name="dateTime">The DateTime value</param>
+        /// <returns>The new instance.</returns>
+        public static DateTimeValue FromDateTime(Task task, HPMProjectCustomColumnsColumn customColumn, DateTime dateTime)
         {
             return FromHpmDateTime(task, customColumn, HPMUtilities.HPMDateTime(dateTime, false));
         }
@@ -53,21 +71,47 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
                 return string.Empty;
         }
 
-        internal override long ToInt()
-        {
-            return (long)hpmDateTime;
-        }
-
-        internal override double ToDouble()
+        /// <summary>
+        /// The value as a Hansoft time value, i.e., microseconds since Jan 1 1970 UTC.
+        /// </summary>
+        /// <returns>The value</returns>
+        public ulong ToHpmDateTime()
         {
             return hpmDateTime;
         }
 
+        /// <summary>
+        /// The value as a Hansoft time value, i.e., microseconds since Jan 1 1970 UTC.
+        /// </summary>
+        /// <returns>The value</returns>
+        public override long ToInt()
+        {
+            return (long)hpmDateTime;
+        }
+
+        /// <summary>
+        /// The value as a Hansoft time value, i.e., microseconds since Jan 1 1970 UTC.
+        /// </summary>
+        /// <returns>The value</returns>
+        public override double ToDouble()
+        {
+            return hpmDateTime;
+        }
+
+        /// <summary>
+        /// The value as a DateTime value, with the provided IFormatProvider
+        /// </summary>
+        /// <param name="provider">An IFormatProvider</param>
+        /// <returns>The DateTime value.</returns>
         public override DateTime ToDateTime(IFormatProvider provider)
         {
             return ToDateTime();
         }
 
+        /// <summary>
+        /// Returns the value as a DateTime value.
+        /// </summary>
+        /// <returns>The DateTime value.</returns>
         public DateTime ToDateTime()
         {
             return HPMUtilities.FromHPMDateTime(hpmDateTime);

@@ -11,7 +11,7 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
     /// <summary>
     /// Encapsulates a tasks value for custom column of multiple selection type.
     /// </summary>
-    class MultipleSelectionValue : CustomColumnValue
+    public class MultipleSelectionValue : CustomColumnValue
     {
         private int[] selections;
 
@@ -59,12 +59,12 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return HPMUtilities.DecodeDroplistValues(selections, CustomColumn.m_DropListItems);
         }
 
-        internal override long ToInt()
+        public override long ToInt()
         {
             throw new NotImplementedException();
         }
 
-        internal override double ToDouble()
+        public override double ToDouble()
         {
             throw new NotImplementedException();
         }

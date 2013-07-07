@@ -119,6 +119,25 @@ namespace Hansoft.ObjectWrapper
         }
 
         /// <summary>
+        /// The project that this task belongs to.
+        /// </summary>
+        public Project Project
+        {
+            get
+            {
+                return Project.GetProject(MainProjectID);
+            }
+        }
+
+        /// <summary>
+        /// The project view that this task belongs to.
+        /// </summary>
+        public abstract ProjectView ProjectView
+        {
+            get;
+        }
+
+        /// <summary>
         /// The ID of the Main Project of the Task.
         /// </summary>
         public HPMUniqueID MainProjectID
@@ -204,6 +223,33 @@ namespace Hansoft.ObjectWrapper
         }
 
         /// <summary>
+        /// The time the task was last updated.
+        /// </summary>
+        public DateTime LastUpdated
+        {
+            get
+            {
+                return HPMUtilities.FromHPMDateTime(Session.TaskGetLastUpdatedTime(UniqueTaskID));
+            }
+        }
+
+        /// <summary>
+        /// Check whether this task is tagged to a release.
+        /// </summary>
+        /// <param name="release">The release.</param>
+        /// <returns>true if this task is tagged to the release, false otherwise.</returns>
+        public bool IsTaggedToRelease(Release release)
+        {
+            HPMTaskLinkedToMilestones relIDs = Session.TaskGetLinkedToMilestones(UniqueTaskID);
+            foreach (HPMUniqueID relID in relIDs.m_Milestones)
+            {
+                if (relID.m_ID == release.UniqueID.m_ID)
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// The releases that this task is tagged to.
         /// </summary>
         public List<Release> TaggedToReleases
@@ -214,8 +260,6 @@ namespace Hansoft.ObjectWrapper
                 HPMTaskLinkedToMilestones relIDs = Session.TaskGetLinkedToMilestones(UniqueTaskID);
                 foreach (HPMUniqueID relID in relIDs.m_Milestones)
                 {
-                    // TODO: Should this really be necessary I was forced to add this after deleting a release that my sprint
-                    // was tagged to.
                     if (Session.UtilIsIDValid(relID))
                         releases.Add((Release)(Task.GetTask(Session.TaskRefGetTask(relID))));
                 }
@@ -478,15 +522,12 @@ namespace Hansoft.ObjectWrapper
             set { if (DetailedDescription != value) Session.TaskSetDetailedDescription(UniqueTaskID, value); }
         }
 
-        private HPMProjectCustomColumnsColumn GetCustomColumn(string columnName)
+        /// <summary>
+        /// The Hansoft Url that will open up Hansoft and navigate to this task.
+        /// </summary>
+        public string Url
         {
-            HPMProjectCustomColumns allColumns = Session.ProjectCustomColumnsGet(ProjectID);
-            foreach (HPMProjectCustomColumnsColumn customColumn in allColumns.m_ShowingColumns)
-            {
-                if (customColumn.m_Name.Equals(columnName))
-                    return customColumn;
-            }
-            return null;
+            get { return Session.UtilGetHansoftURL(UniqueID.m_ID.ToString()); }
         }
 
         /// <summary>
@@ -511,7 +552,7 @@ namespace Hansoft.ObjectWrapper
 
         private CustomColumnValue GetCustomColumnValue(string columnName, bool aggregated)
         {
-            HPMProjectCustomColumnsColumn customColumn = GetCustomColumn(columnName);
+            HPMProjectCustomColumnsColumn customColumn = ProjectView.GetCustomColumn(columnName);
             if (customColumn != null)
                 return GetCustomColumnValue(customColumn, aggregated);
             else
@@ -520,7 +561,7 @@ namespace Hansoft.ObjectWrapper
 
         internal void SetCustomColumnValue(string columnName, CustomColumnValue value)
         {
-            HPMProjectCustomColumnsColumn customColumn = GetCustomColumn(columnName);
+            HPMProjectCustomColumnsColumn customColumn = ProjectView.GetCustomColumn(columnName);
             if (customColumn != null)
                 SetCustomColumnValue(customColumn, value);
         }

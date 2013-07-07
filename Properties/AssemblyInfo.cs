@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Jean for Hansoft")]
-[assembly: AssemblyCopyright("Copyright ©  2013 Svante Lidman")]
+[assembly: AssemblyCopyright("Copyright ©  2013 Hansoft AB")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

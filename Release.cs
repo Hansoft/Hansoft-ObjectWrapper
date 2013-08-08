@@ -428,6 +428,9 @@ namespace Hansoft.ObjectWrapper
                 int pruneTo = -1;
                 int rawInd = 0;
 
+                while (rawHistory.Times[rawInd].AddDays(-1).Date < dayToCalculate)
+                    rawInd = NextDay(rawInd, rawHistory);
+
                 for (int iValue = 0; iValue < cache.normalizedHistoryCached[(int)historyKind].Length; iValue += 1)
                 {
                     if (dayToCalculate.Date == end.Date)
@@ -439,6 +442,11 @@ namespace Hansoft.ObjectWrapper
                     {
                         pruneTo = iValue;
                         cache.normalizedHistoryCached[(int)historyKind].SetValueAt(iValue, 0);
+                        dayToCalculate = dayToCalculate.AddDays(1);
+                    }
+                    else if (dayToCalculate.Date > rawHistory.Times[rawHistory.Length - 1].AddDays(-1).Date)
+                    {
+                        cache.normalizedHistoryCached[(int)historyKind].SetValueAt(iValue, rawHistory.Values[rawHistory.Length - 1]);
                         dayToCalculate = dayToCalculate.AddDays(1);
                     }
                     else if (rawInd >= rawHistory.Length)

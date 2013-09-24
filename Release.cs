@@ -17,6 +17,7 @@ namespace Hansoft.ObjectWrapper
 
         internal class CachedData
         {
+            internal DateTime remainingWorkdaysCachedReleaseDate = DateTime.MinValue;
             internal DateTime remainingWorkdaysCachedUpdated = DateTime.MinValue;
             internal int remainingWorkDaysCached;
 
@@ -78,7 +79,10 @@ namespace Hansoft.ObjectWrapper
         {
             get
             {
-                return Sprints.Count > 0;
+                if (Sprints.Count > 0)
+                    return Sprints.Min(s => s.Start) <= DateTime.Now.Date;
+                else
+                    return false;
             }
         }
 
@@ -89,7 +93,7 @@ namespace Hansoft.ObjectWrapper
         {
             get
             {
-                if (Started)
+                if (Sprints.Count > 0)
                     return Sprints.Min(s => s.Start);
                 else
                     return DateTime.MinValue;
@@ -104,13 +108,14 @@ namespace Hansoft.ObjectWrapper
         {
             get
             {
-                if (cache.remainingWorkDaysCached >= 0 && cache.remainingWorkdaysCachedUpdated != DateTime.Now.Date)
+                if ((cache.remainingWorkDaysCached >= 0 && cache.remainingWorkdaysCachedUpdated != DateTime.Now.Date) || cache.remainingWorkdaysCachedReleaseDate != Date)
                 {
 
                     cache.remainingWorkDaysCached = 0;
 
                     DateTime day = DateTime.Now.Date;
                     cache.remainingWorkdaysCachedUpdated = day;
+                    cache.remainingWorkdaysCachedReleaseDate = Date;
                     day = day.AddDays(1);
                     DateTime end = Date.Date;
                     while (day <= end)
@@ -289,7 +294,8 @@ namespace Hansoft.ObjectWrapper
                 this.start = start.Date;
                 this.end = end.Date;
 
-                length = (end - start).Days + 1;
+                length = Math.Max((end - start).Days + 1, 0);
+                
                 values = new double[length];
             }
 
@@ -463,8 +469,18 @@ namespace Hansoft.ObjectWrapper
                     else if (dayToCalculate.Date < rawHistory.Times[rawInd].Date.AddDays(-1))
                     {
                         // There is a missing value in the middle of the sequence interpolate a value
-                        DateTime precedingDate = dayToCalculate.AddDays(-1);
-                        double precedingValue = cache.normalizedHistoryCached[(int)historyKind].Values[iValue - 1];
+                        DateTime precedingDate;
+                        double precedingValue;
+                        if (iValue > 0)
+                        {
+                            precedingDate = dayToCalculate.AddDays(-1);
+                            precedingValue = cache.normalizedHistoryCached[(int)historyKind].Values[iValue - 1];
+                        }
+                        else
+                        {
+                            precedingDate = rawHistory.Times[rawInd-1].Date;
+                            precedingValue = rawHistory.Values[rawInd - 1];
+                        }
                         DateTime followingDate = rawHistory.Times[rawInd].Date;
                         double followingValue = rawHistory.Values[rawInd];
                         if (Project.GetProject(MainProjectID).IsWorkingDay(dayToCalculate))
@@ -754,42 +770,44 @@ namespace Hansoft.ObjectWrapper
             }
         }
 
-        private double[] GetRiskLimits(int remainingWorkDays, double predictedVelocity, double factor)
+        private double[] GetRiskLimits(int remainingWorkDays, double predictedVelocity, double lowRiskLimit, double highRiskLimit)
         {
             double[] limits = new double[2];
-            limits[0] = remainingWorkDays * predictedVelocity * (1 - factor);
-            limits[1] = remainingWorkDays * predictedVelocity * (1 + factor);
+            limits[0] = remainingWorkDays * predictedVelocity * lowRiskLimit/100;
+            limits[1] = remainingWorkDays * predictedVelocity * highRiskLimit/100;
             return limits;
         }
 
-        private double[] GetRiskLimitsPoints(double factor)
+        private double[] GetRiskLimitsPoints(double lowRiskLimit, double highRiskLimit)
         {
-            return GetRiskLimits(RemainingWorkDays, PredictedPointsVelocity, factor);
+            return GetRiskLimits(RemainingWorkDays, PredictedPointsVelocity, lowRiskLimit, highRiskLimit);
         }
 
-        private double[] GetRiskLimitsEstimatedDays(double factor)
+        private double[] GetRiskLimitsEstimatedDays(double lowRiskLimit, double highRiskLimit)
         {
-            return GetRiskLimits(RemainingWorkDays, PredictedEstimatedDaysVelocity, factor);
+            return GetRiskLimits(RemainingWorkDays, PredictedEstimatedDaysVelocity, lowRiskLimit, highRiskLimit);
         }
 
         /// <summary>
         /// Based on the points history, get the items categorized in to low/medium/high risk to complete by the release date.
         /// </summary>
-        /// <param name="factor"></param>
+        /// <param name="lowRiskLimit">Lower limit value in percent. Items that fit in within the given percentage of remaining estimated capacity will be low risk.</param>
+        /// <param name="highRiskLimit">Upper limit value in percent. Items that fit in within the given percentage of remaining estimated capacity will be medium risk.</param>
         /// <returns></returns>
-        public List<ProductBacklogItem>[] GetRemainingItemsByRiskPoints(double factor)
+        public List<ProductBacklogItem>[] GetRemainingItemsByRiskPoints(double lowRiskLimit, double highRiskLimit)
         {
-            return RemainingItemsByRisk(RemainingItemsSortedByPriority, HistoryKind.Points, GetRiskLimitsPoints(factor));
+            return RemainingItemsByRisk(RemainingItemsSortedByPriority, HistoryKind.Points, GetRiskLimitsPoints(lowRiskLimit, highRiskLimit));
         }
 
         /// <summary>
         /// Based on the estimated days history, get the items categorized in to low/medium/high risk to complete by the release date.
         /// </summary>
-        /// <param name="factor"></param>
+        /// <param name="lowRiskLimit">Lower limit value in percent. Items that fit in within the given percentage of remaining estimated capacity will be low risk.</param>
+        /// <param name="highRiskLimit">Upper limit value in percent. Items that fit in within the given percentage of remaining estimated capacity will be medium risk.</param>
         /// <returns></returns>
-        public List<ProductBacklogItem>[] GetRemainingItemsByRiskEstimatedDays(double factor)
+        public List<ProductBacklogItem>[] GetRemainingItemsByRiskEstimatedDays(double lowRiskLimit, double highRiskLimit)
         {
-            return RemainingItemsByRisk(RemainingItemsSortedByPriority, HistoryKind.EstimatedDays, GetRiskLimitsEstimatedDays(factor));
+            return RemainingItemsByRisk(RemainingItemsSortedByPriority, HistoryKind.EstimatedDays, GetRiskLimitsEstimatedDays(lowRiskLimit, highRiskLimit));
         }
 
         private List<ProductBacklogItem>[] RemainingItemsByRisk(List<ProductBacklogItem> remainingItemsPriorityOrder, HistoryKind historyKind, double[] limits)

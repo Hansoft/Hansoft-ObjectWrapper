@@ -369,24 +369,14 @@ namespace Hansoft.ObjectWrapper
         /// <summary>
         /// The aggregated status value over all children as it is displayed in the Hansoft client
         /// </summary>
-        public HansoftEnumValue AggregatedStatus
+        public virtual HansoftEnumValue AggregatedStatus
         {
             get
             {
                 if (HasChildren)
                 {
-                    EHPMTaskStatus aggregatedStatus = EHPMTaskStatus.Completed;
-                    foreach (Task leafTask in DeepLeaves)
-                    {
-                        if ((EHPMTaskStatus)leafTask.Status.Value == EHPMTaskStatus.Blocked)
-                        {
-                            aggregatedStatus = EHPMTaskStatus.Blocked;
-                            break;
-                        }
-                        else if ((EHPMTaskStatus)leafTask.Status.Value != EHPMTaskStatus.Completed)
-                            aggregatedStatus = EHPMTaskStatus.NotDone;
-                    }
-                    return new HansoftEnumValue(MainProjectID, EHPMProjectDefaultColumn.ItemStatus, aggregatedStatus, (int)aggregatedStatus);
+                    EHPMTaskStatus status = Session.TaskRefGetSummary(UniqueID).m_TaskStatus;
+                    return new HansoftEnumValue(MainProjectID, EHPMProjectDefaultColumn.ItemStatus, status, (int)status);
                 }
                 else
                     return Status;
@@ -414,17 +404,16 @@ namespace Hansoft.ObjectWrapper
         /// <summary>
         /// The aggregated points value over all children as it is displayed in the Hansoft client
         /// </summary>
-        public int AggregatedPoints
+        public virtual int AggregatedPoints
         {
             get
             {
                 if (HasChildren)
-                    return DeepLeaves.Sum(task => ((Task)task).Points);
+                    return Session.TaskRefGetSummary(UniqueID).m_ComplexityPoints;
                 else
                     return Points;
             }
         }
-
 
         /// <summary>
         /// The builtin column Work remaining.
@@ -438,14 +427,20 @@ namespace Hansoft.ObjectWrapper
         /// <summary>
         /// The aggregated work remaining value over all children as it is displayed in the Hansoft client
         /// </summary>
-        public double AggregatedWorkRemaining
+        public virtual double AggregatedWorkRemaining
         {
             get
             {
                 if (HasChildren)
-                    return DeepLeaves.Sum(task => ((Task)task).WorkRemaining);
+                {
+                    // Can't use TaskRefGetSummary for workremianing since it will return infinity unless all items have a set value for workRemaining
+                    double aggregatedWorkRemaining = 0;
+                    foreach (Task item in DeepLeaves)
+                        aggregatedWorkRemaining += double.IsInfinity(item.WorkRemaining) ? 0 : item.WorkRemaining;
+                    return aggregatedWorkRemaining;
+                }
                 else
-                    return WorkRemaining;
+                    return double.IsInfinity(WorkRemaining) ? 0 : WorkRemaining;
             }
         }
 
@@ -461,12 +456,12 @@ namespace Hansoft.ObjectWrapper
         /// <summary>
         /// The aggregated estimated days value over all children as it is displayed in the Hansoft client
         /// </summary>
-        public double AggregatedEstimatedDays
+        public virtual double AggregatedEstimatedDays
         {
             get
             {
                 if (HasChildren)
-                    return DeepLeaves.Sum(task => ((Task)task).EstimatedDays);
+                    return Session.TaskRefGetSummary(UniqueID).m_EstimatedIdealDays;
                 else
                     return EstimatedDays;
             }
@@ -537,7 +532,11 @@ namespace Hansoft.ObjectWrapper
         /// <returns>The requested value wrapped by a subclass of CustomColumnValue</returns>
         public CustomColumnValue GetCustomColumnValue(string columnName)
         {
-            return GetCustomColumnValue(columnName, false);
+            HPMProjectCustomColumnsColumn customColumn = ProjectView.GetCustomColumn(columnName);
+            if (customColumn != null)
+                return GetCustomColumnValue(customColumn);
+            else
+                return CustomColumnValue.FromInternalValue(this, null, "");
         }
 
         /// <summary>
@@ -547,14 +546,9 @@ namespace Hansoft.ObjectWrapper
         /// <returns>The requested value wrapped by a subclass of CustomColumnValue</returns>
         public CustomColumnValue GetAggregatedCustomColumnValue(string columnName)
         {
-            return GetCustomColumnValue(columnName, true);
-        }
-
-        private CustomColumnValue GetCustomColumnValue(string columnName, bool aggregated)
-        {
             HPMProjectCustomColumnsColumn customColumn = ProjectView.GetCustomColumn(columnName);
             if (customColumn != null)
-                return GetCustomColumnValue(customColumn, aggregated);
+                return GetAggregatedCustomColumnValue(customColumn);
             else
                 return CustomColumnValue.FromInternalValue(this, null, "");
         }
@@ -573,7 +567,8 @@ namespace Hansoft.ObjectWrapper
         /// <returns>The requested value wrapped by a subclass of CustomColumnValue</returns>
         public CustomColumnValue GetCustomColumnValue(HPMProjectCustomColumnsColumn customColumn)
         {
-            return GetCustomColumnValue(customColumn, false);
+            string cDataString = Session.TaskGetCustomColumnData(UniqueTaskID, customColumn.m_Hash);
+            return CustomColumnValue.FromInternalValue(this, customColumn, cDataString);
         }
 
         /// <summary>
@@ -581,34 +576,40 @@ namespace Hansoft.ObjectWrapper
         /// </summary>
         /// <param name="customColumn">The custom column to get the value for.</param>
         /// <returns>The requested value wrapped by a subclass of CustomColumnValue</returns>
-        public CustomColumnValue GetAggregatedCustomColumnValue(HPMProjectCustomColumnsColumn customColumn)
+        internal virtual CustomColumnValue GetAggregatedCustomColumnValue(HPMProjectCustomColumnsColumn customColumn)
         {
-            return GetCustomColumnValue(customColumn, true);
-        }
-
-        private CustomColumnValue GetCustomColumnValue(HPMProjectCustomColumnsColumn customColumn, bool aggregate)
-        {
-            if (aggregate && HasChildren && (customColumn.m_Type == EHPMProjectCustomColumnsColumnType.AccumulatedTime || customColumn.m_Type == EHPMProjectCustomColumnsColumnType.FloatNumber || customColumn.m_Type == EHPMProjectCustomColumnsColumnType.IntegerNumber))
+            if (HasChildren && (customColumn.m_Type == EHPMProjectCustomColumnsColumnType.AccumulatedTime || customColumn.m_Type == EHPMProjectCustomColumnsColumnType.FloatNumber || customColumn.m_Type == EHPMProjectCustomColumnsColumnType.IntegerNumber))
             {
-                if (customColumn.m_Type == EHPMProjectCustomColumnsColumnType.IntegerNumber)
+                HPMTaskCustomSummaryValue[] summaryValues = Session.TaskRefGetSummary(UniqueID).m_CustomSummaryValues;
+                foreach (HPMTaskCustomSummaryValue value in summaryValues)
                 {
-                    long aggregatedValue = DeepLeaves.Sum(task => ((Task)task).GetCustomColumnValue(customColumn).ToInt());
-                    return IntegerNumberValue.FromInteger(this, customColumn, aggregatedValue);
+                    if (value.m_Hash == customColumn.m_Hash)
+                    {
+                        if (customColumn.m_Type == EHPMProjectCustomColumnsColumnType.IntegerNumber)
+                        {
+                            long aggregatedValue = value.m_IntegerValue;
+                            return IntegerNumberValue.FromInteger(this, customColumn, aggregatedValue);
+                        }
+                        else
+                        {
+                            double aggregatedValue = value.m_FloatValue;
+                            if (customColumn.m_Type == EHPMProjectCustomColumnsColumnType.FloatNumber)
+                                return FloatNumberValue.FromFloat(this, customColumn, aggregatedValue);
+                            else
+                                return AccumulatedTimeValue.FromFloat(this, customColumn, aggregatedValue);
+                        }
+                    }
                 }
+                // No summary value was found, return 0
+                if (customColumn.m_Type == EHPMProjectCustomColumnsColumnType.IntegerNumber)
+                    return IntegerNumberValue.FromInteger(this, customColumn, 0);
+                else if (customColumn.m_Type == EHPMProjectCustomColumnsColumnType.FloatNumber)
+                    return FloatNumberValue.FromFloat(this, customColumn, 0);
                 else
-                {
-                    double aggregatedValue = DeepLeaves.Sum(task => ((Task)task).GetCustomColumnValue(customColumn).ToDouble());
-                    if (customColumn.m_Type == EHPMProjectCustomColumnsColumnType.FloatNumber)
-                        return FloatNumberValue.FromFloat(this, customColumn, aggregatedValue);
-                    else
-                        return AccumulatedTimeValue.FromFloat(this, customColumn, aggregatedValue);
-                }                    
+                    return AccumulatedTimeValue.FromFloat(this, customColumn, 0);
             }
             else
-            {
-                string cDataString = Session.TaskGetCustomColumnData(UniqueTaskID, customColumn.m_Hash);
-                return CustomColumnValue.FromInternalValue(this, customColumn, cDataString);
-            }
+                return GetCustomColumnValue(customColumn);
         }
         
         /// <summary>

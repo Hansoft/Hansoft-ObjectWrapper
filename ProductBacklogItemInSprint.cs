@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using HPMSdk;
+using Hansoft.ObjectWrapper.CustomColumnValues;
 
 namespace Hansoft.ObjectWrapper
 {

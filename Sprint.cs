@@ -54,7 +54,7 @@ namespace Hansoft.ObjectWrapper
             get
             {
                 HPMTaskTimeZones tzData = Session.TaskGetTimeZones(UniqueTaskID);
-                return HPMUtilities.FromHPMDateTime(tzData.m_Zones[0].m_End);
+                return HPMUtilities.FromHPMDateTime(tzData.m_Zones[tzData.m_Zones.Length-1].m_End);
             }
         }
 

@@ -16,7 +16,7 @@ namespace Hansoft.ObjectWrapper
 
         #region Backlog Priority
 
-        internal static List<ProductBacklogItem> SortByPriority(Project project, List<ProductBacklogItem> unsorted)
+        public static List<ProductBacklogItem> SortByPriority(Project project, List<ProductBacklogItem> unsorted)
         {
             List<ProductBacklogItem> sorted = new List<ProductBacklogItem>();
             foreach (ProductBacklogItem anItem in unsorted)
@@ -38,8 +38,6 @@ namespace Hansoft.ObjectWrapper
                 sortedBacklog.Add(item);
                 nextId = item.Session.TaskRefGetPreviousWorkPriorityID(item.UniqueID);
             }
-            // Now we have the items sorted from low to high so let us reverse...
-            //sortedBacklog.Reverse();
             foreach (ProductBacklogItem aItem in sorted)
                 aItem.AbsolutePriority = sortedBacklog.FindIndex(ii => ii.UniqueID.m_ID == aItem.UniqueID.m_ID);
 
@@ -63,7 +61,7 @@ namespace Hansoft.ObjectWrapper
         #region Project Level
 
         /// <summary>
-        /// Find a project with a specified name in the database that SessionManager is connected tp.
+        /// Find a project with a specified name in the database that SessionManager is connected to.
         /// </summary>
         /// <param name="projectName">The name of the project to find.</param>
         /// <returns>The found Project or null if not found.</returns>
@@ -180,8 +178,13 @@ namespace Hansoft.ObjectWrapper
         /// <returns>The time value formatted as an end user suitable string.</returns>
         public static string HPMDateTimeToDateTimeString(UInt64 hpmDateTime)
         {
-            DateTime dt = FromHPMDateTime(hpmDateTime);
-            return dt.ToLocalTime().ToString();
+            if (hpmDateTime != 0)
+            {
+                DateTime dt = FromHPMDateTime(hpmDateTime);
+                return dt.ToLocalTime().ToString();
+            }
+            else
+                return "";
         }
 
         /// <summary>

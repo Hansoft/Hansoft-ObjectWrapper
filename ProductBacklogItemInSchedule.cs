@@ -21,5 +21,14 @@ namespace Hansoft.ObjectWrapper
             : base(uniqueID, uniqueTaskID)
         {
         }
+
+        public int Duration
+        {
+            get
+            {
+                return Session.TaskGetDuration(UniqueTaskID);
+            }
+        }
+
     }
 }

@@ -867,6 +867,22 @@ namespace Hansoft.ObjectWrapper
         }
 
         /// <summary>
+        /// The product backlog items that are committed to the schedule and are tagged to this release.
+        /// </summary>
+        public List<ProductBacklogItemInSchedule> ProductBacklogItemsInSchedule
+        {
+            get
+            {
+                List<ProductBacklogItemInSchedule> taggedToRelease = new List<ProductBacklogItemInSchedule>();
+                foreach (ProductBacklogItemInSchedule s in Project.GetProject(MainProjectID).ProductBacklogItemsInSchedule)
+                    if (s.IsTaggedToRelease(this))
+                        taggedToRelease.Add(s);
+                return taggedToRelease;
+            }
+        }
+
+
+        /// <summary>
         /// The product backlog items that are tagged to this release.
         /// </summary>
         public List<ProductBacklogItem> ProductBacklogItems

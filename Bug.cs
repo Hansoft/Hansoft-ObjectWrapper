@@ -13,7 +13,6 @@ namespace Hansoft.ObjectWrapper
     /// </summary>
     public class Bug : Task
     {
-
         internal static Bug GetBug(HPMUniqueID uniqueID, HPMUniqueID uniqueTaskID)
         {
             return new Bug(uniqueID, uniqueTaskID);

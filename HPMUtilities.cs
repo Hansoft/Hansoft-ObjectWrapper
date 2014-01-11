@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.IO;
 
 using HPMSdk;
@@ -68,6 +69,31 @@ namespace Hansoft.ObjectWrapper
         public static Project FindProject(string projectName)
         {
             return GetProjects().Find(p => p.Name == projectName);
+        }
+
+        /// <summary>
+        /// Find projects with names matching the specified regular expression in the database that SessionManager is connected to.
+        /// </summary>
+        /// <param name="regex">The regular expression to match project names against.</param>
+        /// <returns>The found projects.</returns>
+        public static List<Project> FindProjects(string regex, bool inverted)
+        {
+            List<Project> matches = new List<Project>();
+            Regex matcher = new Regex(regex);
+            foreach (Project p in GetProjects())
+            {
+                if (!inverted)
+                {
+                    if (matcher.IsMatch(p.Name))
+                        matches.Add(p);
+                }
+                else
+                {
+                    if (!matcher.IsMatch(p.Name))
+                        matches.Add(p);
+                }
+            }
+            return matches;
         }
 
         /// <summary>

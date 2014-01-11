@@ -44,6 +44,14 @@ namespace Hansoft.ObjectWrapper
             }
         }
 
+        public int Duration
+        {
+            get
+            {
+                return Session.TaskGetDuration(UniqueTaskID);
+            }
+        }
+
         /// <summary>
         /// The assignment percentage of a particular user that is assigned to this scheduled task.
         /// </summary>

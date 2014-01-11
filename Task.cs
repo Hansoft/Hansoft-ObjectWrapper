@@ -223,6 +223,21 @@ namespace Hansoft.ObjectWrapper
         }
 
         /// <summary>
+        /// Get the predecessor of this task in the hierarchy view
+        /// </summary>
+        public Task Predecessor
+        {
+            get
+            {
+                HPMUniqueID prevRefID = Session.TaskRefGetPreviousID(UniqueID);
+                if (prevRefID.m_ID == -1)
+                    return null;
+                else
+                    return Task.GetTask(prevRefID);
+            }
+        }
+
+        /// <summary>
         /// The time the task was last updated.
         /// </summary>
         public DateTime LastUpdated

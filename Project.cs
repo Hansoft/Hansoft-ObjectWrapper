@@ -49,7 +49,10 @@ namespace Hansoft.ObjectWrapper
         {
             get
             {
-                return Session.ProjectUtilGetQA(UniqueID);
+                HPMUniqueID qaProjectID = Session.ProjectUtilGetQA(UniqueID);
+                if (qaProjectID.m_ID == -1)
+                    qaProjectID = Session.ProjectOpenQAProjectBlock(UniqueID);
+                return qaProjectID;
             }
         }
 
@@ -57,7 +60,10 @@ namespace Hansoft.ObjectWrapper
         {
             get
             {
-                return Session.ProjectUtilGetBacklog(UniqueID);
+                HPMUniqueID backlogProjectID = Session.ProjectUtilGetBacklog(UniqueID);
+                if (backlogProjectID.m_ID == -1)
+                    backlogProjectID = Session.ProjectOpenBacklogProjectBlock(UniqueID);
+                return backlogProjectID;
             }
         }
 
@@ -270,6 +276,21 @@ namespace Hansoft.ObjectWrapper
         }
 
         /// <summary>
+        /// Will return all product backlog items committed as scheduled tasks
+        /// </summary>
+        public List<ProductBacklogItemInSchedule> ProductBacklogItemsInSchedule
+        {
+            get
+            {
+                List<ProductBacklogItemInSchedule> found = new List<ProductBacklogItemInSchedule>();
+                foreach (Task t in ScheduledItems)
+                    if (t is ProductBacklogItemInSchedule)
+                        found.Add((ProductBacklogItemInSchedule)t);
+                return found;
+            }
+        }
+
+        /// <summary>
         /// Checks if a certain date in the project is a working day according to the project calendar.
         /// </summary>
         /// <param name="date">The date to check.</param>
@@ -317,5 +338,134 @@ namespace Hansoft.ObjectWrapper
                 }
             }
         }
+
+        /// <summary>
+        /// Create a replica of this project including tasks, reports, workflows/kanbans, and view presets. The intent is to
+        /// use one project as a template and instantiate new projects from this template.
+        /// </summary>
+        /// <param name="newName"></param>
+        /// <returns></returns>
+        public Project Clone(String newName)
+        {
+            HPMProjectProperties templateProperties = Session.ProjectGetProperties(UniqueID);
+            templateProperties.m_Name = newName;
+            HPMUniqueID newProjectID = Session.ProjectCreate(templateProperties);
+            Project newProject = Project.GetProject(newProjectID);
+
+            CloneColumns(this.Schedule.UniqueID, newProject.Schedule.UniqueID);
+            CloneColumns(this.ProductBacklog.UniqueID, newProject.ProductBacklog.UniqueID);
+            CloneColumns(this.BugTracker.UniqueID, newProject.BugTracker.UniqueID);
+
+            CloneReports(this.Schedule.UniqueID, newProject.Schedule.UniqueID);
+            CloneReports(this.ProductBacklog.UniqueID, newProject.ProductBacklog.UniqueID);
+            CloneReports(this.BugTracker.UniqueID, newProject.BugTracker.UniqueID);
+
+            ClonePresets(this.Schedule.UniqueID, newProject.Schedule.UniqueID);
+            ClonePresets(this.ProductBacklog.UniqueID, newProject.ProductBacklog.UniqueID);
+            ClonePresets(this.BugTracker.UniqueID, newProject.BugTracker.UniqueID);
+
+            CloneWorkflows(this.UniqueID, newProject.UniqueID);
+
+            CloneChildTasks(this.Schedule, newProject.Schedule, newProject.Schedule, Session.ProjectCustomColumnsGet(this.Schedule.UniqueID));
+            CloneChildTasks(this.ProductBacklog, newProject.ProductBacklog, newProject.ProductBacklog, Session.ProjectCustomColumnsGet(this.ProductBacklog.UniqueID));
+
+            CloneBugWorkflow(this.BugTracker.UniqueID, newProject.BugTracker.UniqueID);
+
+            // TODO; Modify the workflow in the Bugtracker
+            // Optionally: Set the start/finish dates for any sprints/scheduled tasks so that they are offseted based on the current date
+            // Optonally: replicate tasks in the QA view
+            // Optionally: Loop over again to recreate any links / committed items / release tags / delegation / applied or default pipelines and workflows
+
+            return newProject;
+        }
+
+        private void CloneColumns(HPMUniqueID sourceProjectID, HPMUniqueID targetProjectID)
+        {
+            Session.ProjectCustomColumnsSet(targetProjectID, Session.ProjectCustomColumnsGet(sourceProjectID));
+        }
+
+        private void CloneReports(HPMUniqueID sourceProjectID, HPMUniqueID targetProjectID)
+        {
+            foreach (HPMUniqueID resourceID in Session.ProjectEnumReportResources(sourceProjectID).m_Resources)
+                Session.ProjectSetReports(targetProjectID, resourceID, Session.ProjectGetReports(sourceProjectID, resourceID));
+        }
+
+        private void ClonePresets(HPMUniqueID sourceProjectID, HPMUniqueID targetProjectID)
+        {
+            Session.ProjectSetViewPresets(targetProjectID, Session.ProjectGetViewPresets(sourceProjectID));
+        }
+
+        private void CloneWorkflows(HPMUniqueID sourceProjectID, HPMUniqueID targetProjectID)
+        {
+            foreach (uint iWorkflow in Session.ProjectWorkflowEnum(sourceProjectID, true).m_Workflows)
+            {
+                HPMProjectWorkflowSettings settings = Session.ProjectWorkflowGetSettings(sourceProjectID, iWorkflow);
+                Session.ProjectWorkflowCreate(targetProjectID, settings.m_Properties);
+                Session.ProjectWorkflowSetSettings(targetProjectID, settings.m_Identifier,settings);
+            }
+        }
+
+        private void CloneBugWorkflow(HPMUniqueID sourceQAProjectID, HPMUniqueID targetQAProjectID)
+        {
+        }
+
+        private void CloneChildTasks(HansoftItem sourceParent, HansoftItem targetParent, ProjectView targetProject, HPMProjectCustomColumns customColumns)
+        {
+            Task newTask = null;
+            foreach (Task task in sourceParent.Children)
+            {
+                HPMTaskCreateUnifiedReference prevRefID = new HPMTaskCreateUnifiedReference();
+                if (newTask == null)
+                    prevRefID.m_RefID = -1;
+                else
+                    prevRefID.m_RefID = newTask.UniqueTaskID;
+                prevRefID.m_bLocalID = false;
+
+                HPMTaskCreateUnifiedReference prevWorkPrioRefID = new HPMTaskCreateUnifiedReference();
+                prevWorkPrioRefID.m_RefID = -2;
+                prevWorkPrioRefID.m_bLocalID = false;
+
+                HPMTaskCreateUnifiedReference[] parentRefIds = new HPMTaskCreateUnifiedReference[1];
+                parentRefIds[0] = new HPMTaskCreateUnifiedReference();
+                parentRefIds[0].m_RefID = targetParent.Id; // This should be a taskref, which it should be
+                parentRefIds[0].m_bLocalID = false;
+
+                HPMTaskCreateUnified createTaskData = new HPMTaskCreateUnified();
+                createTaskData.m_Tasks = new HPMTaskCreateUnifiedEntry[1];
+                createTaskData.m_Tasks[0] = new HPMTaskCreateUnifiedEntry();
+                createTaskData.m_Tasks[0].m_bIsProxy = false;
+                createTaskData.m_Tasks[0].m_LocalID = -1;
+                createTaskData.m_Tasks[0].m_ParentRefIDs = parentRefIds;
+                createTaskData.m_Tasks[0].m_PreviousRefID = prevRefID;
+                createTaskData.m_Tasks[0].m_PreviousWorkPrioRefID = prevWorkPrioRefID;
+                createTaskData.m_Tasks[0].m_NonProxy_ReuseID = 0;
+                createTaskData.m_Tasks[0].m_TaskLockedType = Session.TaskGetLockedType(task.UniqueTaskID);
+                createTaskData.m_Tasks[0].m_TaskType = Session.TaskGetType(task.UniqueTaskID);
+
+
+                HPMChangeCallbackData_TaskCreateUnified createdData = Session.TaskCreateUnifiedBlock(targetProject.UniqueID, createTaskData);
+                if (createdData.m_Tasks.Length == 1)
+                {
+                    newTask = Task.GetTask(createdData.m_Tasks[0].m_TaskRefID);
+                    newTask.Category = task.Category;
+                    newTask.Confidence = task.Confidence;
+                    newTask.DetailedDescription = task.DetailedDescription;
+                    newTask.EstimatedDays = task.EstimatedDays;
+                    newTask.Hyperlink = task.Hyperlink;
+                    newTask.Name = task.Name;
+                    newTask.Points = task.Points;
+                    newTask.Priority = task.Priority;
+                    newTask.Risk = task.Risk;
+                    newTask.Severity = task.Severity;
+                    newTask.Status = task.Status;
+                    newTask.WorkRemaining = task.WorkRemaining;
+                    Session.TaskSetFullyCreated(newTask.UniqueTaskID);
+                    foreach (HPMProjectCustomColumnsColumn column in customColumns.m_ShowingColumns)
+                        newTask.SetCustomColumnValue(column.m_Name, task.GetCustomColumnValue(column.m_Name));
+                    CloneChildTasks(task, newTask, targetProject, customColumns);
+                }
+            }
+        }
+
     }
 }

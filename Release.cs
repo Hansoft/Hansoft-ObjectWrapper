@@ -548,8 +548,7 @@ namespace Hansoft.ObjectWrapper
                 day = Project.GetPreviousWorkingDay(day);
             DateTime previousDay = day.AddDays(-1);
             if (ignoreNonWorkingdays && !Project.IsWorkingDay(previousDay))
-                Project.GetPreviousWorkingDay(previousDay);
-            int index = normalizedHistory.Length - 1;
+                previousDay = Project.GetPreviousWorkingDay(previousDay);
             for (int i = 0; i < nDays; i += 1)
             {
                 if (previousDay < normalizedHistory.Start)
@@ -557,7 +556,6 @@ namespace Hansoft.ObjectWrapper
                 double velocityOneDay = normalizedHistory.ValueAt(previousDay.Date) - normalizedHistory.ValueAt(day.Date);
                 weightedValueSum += velocityOneDay * iDay;
                 weightedDaysSum += iDay;
-                index -= 1;
                 iDay -= 1;
                 day = previousDay;
                 previousDay = previousDay.AddDays(-1);

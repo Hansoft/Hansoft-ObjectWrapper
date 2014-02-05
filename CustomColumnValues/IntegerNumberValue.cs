@@ -45,16 +45,30 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return InternalValue;
         }
 
+        /// <summary>
+        /// The value as a long.
+        /// </summary>
+        /// <returns>The value.</returns>
         public override long ToInt()
         {
             return integerValue;
         }
 
+        /// <summary>
+        /// Not Implemented.
+        /// </summary>
+        /// <returns>NotImplementedException</returns>
         public override double ToDouble()
         {
             throw new NotImplementedException();
         }
 
+
+        /// <summary>
+        /// Parses this IntegerValue and converts it to a DateTime value. The value will be interpreted as
+        /// the number of microseconds since Jan 1 1970.
+        /// </summary>
+        /// <returns>The parsed DateTime or January 1 1970 if the TextValue was not possible to parse.</returns>
         public override DateTime ToDateTime(IFormatProvider provider)
         {
             return HPMUtilities.FromHPMDateTime((ulong)integerValue);

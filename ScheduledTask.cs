@@ -44,6 +44,9 @@ namespace Hansoft.ObjectWrapper
             }
         }
 
+        /// <summary>
+        /// The Duaration of the task
+        /// </summary>
         public int Duration
         {
             get

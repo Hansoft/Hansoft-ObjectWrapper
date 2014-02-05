@@ -38,6 +38,10 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return InternalValue;
         }
 
+       /// <summary>
+       /// Parses this TextValue and converts it to an Integer (long) value.
+       /// </summary>
+       /// <returns>The parsed Integer value or 0 if the TextValue was not possible to parse.</returns>
         public override long ToInt()
         {
             long iVal;
@@ -46,6 +50,10 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return iVal;
         }
 
+        /// <summary>
+        /// Parses this TextValue and converts it to a float (double) value.
+        /// </summary>
+        /// <returns>The parsed double value or 0 if the TextValue was not possible to parse.</returns>
         public override double ToDouble()
         {
             double dVal;
@@ -54,6 +62,10 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return dVal;
         }
 
+        /// <summary>
+        /// Parses this TextValue and converts it to a DateTime value.
+        /// </summary>
+        /// <returns>The parsed DateTime or January 1 1970 if the TextValue was not possible to parse.</returns>
         public override DateTime ToDateTime(IFormatProvider provider)
         {
             DateTime dt;

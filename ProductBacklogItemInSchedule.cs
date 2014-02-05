@@ -22,6 +22,9 @@ namespace Hansoft.ObjectWrapper
         {
         }
 
+        /// <summary>
+        /// The Duration of the task.
+        /// </summary>
         public int Duration
         {
             get

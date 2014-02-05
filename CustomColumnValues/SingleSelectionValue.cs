@@ -46,16 +46,30 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return HPMUtilities.DecodeDroplistValue((int)selection, CustomColumn.m_DropListItems);
         }
 
+        /// <summary>
+        /// Returns the value in its integer form.
+        /// </summary>
+        /// <returns>The value</returns>
         public override long ToInt()
         {
             return selection;
         }
 
+
+        /// <summary>
+        /// Returns the value in its numeric form.
+        /// </summary>
+        /// <returns>The value</returns>
         public override double ToDouble()
         {
             return selection;
         }
 
+
+        /// <summary>
+        /// Not Implemented.
+        /// </summary>
+        /// <returns>NotImplementedException</returns>
         public override DateTime ToDateTime(IFormatProvider provider)
         {
             throw new NotImplementedException();

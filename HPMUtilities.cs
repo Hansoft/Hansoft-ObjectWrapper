@@ -17,6 +17,12 @@ namespace Hansoft.ObjectWrapper
 
         #region Backlog Priority
 
+        /// <summary>
+        /// Sort a list of ProdutcBacklogItems in the same order as they are displayed in the GUI in the priority vuew
+        /// </summary>
+        /// <param name="project">The Project that the ProductBacklogItems belong to.</param>
+        /// <param name="unsorted">The ProductBacklogItems that should be sorted.</param>
+        /// <returns></returns>
         public static List<ProductBacklogItem> SortByPriority(Project project, List<ProductBacklogItem> unsorted)
         {
             List<ProductBacklogItem> sorted = new List<ProductBacklogItem>();

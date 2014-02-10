@@ -79,14 +79,28 @@ namespace Hansoft.ObjectWrapper
 
         /// <summary>
         /// Find projects with names matching the specified regular expression in the database that SessionManager is connected to.
+        /// Archived projects will not be included.
         /// </summary>
         /// <param name="regex">The regular expression to match project names against.</param>
+        /// <param name="includeArchived">Set to true if archived projects should be included</param>
         /// <returns>The found projects.</returns>
         public static List<Project> FindProjects(string regex, bool inverted)
         {
+            return FindProjects(regex, inverted, false);
+        }
+
+
+        /// <summary>
+        /// Find projects with names matching the specified regular expression in the database that SessionManager is connected to.
+        /// </summary>
+        /// <param name="regex">The regular expression to match project names against.</param>
+        /// <param name="includeArchived">Set to true if archived projects should be included</param>
+        /// <returns>The found projects.</returns>
+        public static List<Project> FindProjects(string regex, bool inverted, bool includeArchived)
+        {
             List<Project> matches = new List<Project>();
             Regex matcher = new Regex(regex);
-            foreach (Project p in GetProjects())
+            foreach (Project p in GetProjects(includeArchived))
             {
                 if (!inverted)
                 {
@@ -100,6 +114,24 @@ namespace Hansoft.ObjectWrapper
                 }
             }
             return matches;
+        }
+
+        /// <summary>
+        /// The projects in the database that the SessionManager is connected to.
+        /// </summary>
+        /// <param name="includeArchived">Set to true if archived projects should be included</param>
+        /// <returns>The list of projects.</returns>
+        public static List<Project> GetProjects(bool includeArchived)
+        {
+            List<Project> projects = new List<Project>();
+            HPMProjectEnum projectIDs = SessionManager.Session.ProjectEnum();
+            foreach (HPMUniqueID projId in projectIDs.m_Projects)
+            {
+                HPMProjectProperties properties = SessionManager.Session.ProjectGetProperties(projId);
+                if (!properties.m_bArchivedStatus || includeArchived)
+                    projects.Add(Project.GetProject(projId));
+            }
+            return projects;
         }
 
         /// <summary>

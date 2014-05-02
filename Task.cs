@@ -508,7 +508,24 @@ namespace Hansoft.ObjectWrapper
         {
             get
             {
-                return Session.LocalizationTranslateString(Session.LocalizationGetDefaultLanguage(), Session.UtilGetWorkflowObjectName(ProjectID, 0, WorkflowStatus));
+                int workFlowID = (int)Session.TaskGetWorkflow(UniqueTaskID);
+                if (workFlowID == -1)
+                    return "";
+                return Session.LocalizationTranslateString(Session.LocalizationGetDefaultLanguage(), Session.UtilGetWorkflowObjectName(MainProjectID, workFlowID, WorkflowStatus));
+            }
+        }
+
+        /// <summary>
+        /// Gets the status of any attached workflow as a localized string.
+        /// 
+        /// NOTE: There is no way to set what translation to user and the UK English localization will always be used.
+        /// </summary>
+        public bool HasWorkFlow
+        {
+            get
+            {
+                int workFlowID = (int)Session.TaskGetWorkflow(UniqueTaskID);
+                return workFlowID != -1;
             }
         }
 
@@ -568,12 +585,6 @@ namespace Hansoft.ObjectWrapper
                 return CustomColumnValue.FromInternalValue(this, null, "");
         }
 
-        internal void SetCustomColumnValue(string columnName, CustomColumnValue value)
-        {
-            HPMProjectCustomColumnsColumn customColumn = ProjectView.GetCustomColumn(columnName);
-            if (customColumn != null)
-                SetCustomColumnValue(customColumn, value);
-        }
 
         /// <summary>
         /// Get the value of a custom column for this task.
@@ -646,11 +657,26 @@ namespace Hansoft.ObjectWrapper
                 SetCustomColumnValueInternal(customColumn, string.Empty);
         }
 
+        /// <summary>
+        /// Sets the value of a custom column for this task. If the column doesn't exist in the tasks context it will do nothing
+        /// </summary>
+        /// <param name="customColumnName">The name of the custom column to set the value for</param>
+        /// <param name="value">The value to be set, can either be an instance of CustomColumnValue or any other type that can reasonably be converted
+        /// to the end user consumable string representation of the value, i.e., as it is displayed in the Hansoft client.</param>
+        public void SetCustomColumnValue(string customColumnName, object value)
+        {
+            // Ensure that we get the custom column of the right project
+            HPMProjectCustomColumnsColumn actualCustomColumn = ProjectView.GetCustomColumn(customColumnName);
+            if (actualCustomColumn != null)
+                SetCustomColumnValue(actualCustomColumn, value);
+        }
+
         private void SetCustomColumnValueInternal(HPMProjectCustomColumnsColumn customColumn, string value)
         {
             if (Session.TaskGetCustomColumnData(UniqueTaskID, customColumn.m_Hash) != value)
                 Session.TaskSetCustomColumnData(UniqueTaskID, customColumn.m_Hash, value, true);
         }
+
 
         /// <summary>
         /// Get the value of a built in column for this task.

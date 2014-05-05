@@ -94,7 +94,8 @@ namespace Hansoft.ObjectWrapper
             }
             set
             {
-                if (Priority != value) Session.TaskSetBacklogPriority(UniqueTaskID, (EHPMTaskAgilePriorityCategory)value.Value);
+                if (Priority != value) 
+                    Session.TaskSetBacklogPriority(UniqueTaskID, (EHPMTaskAgilePriorityCategory)value.Value);
             }
         }
 

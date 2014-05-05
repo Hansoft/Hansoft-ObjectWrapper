@@ -124,6 +124,16 @@ namespace Hansoft.ObjectWrapper
             return null;
         }
 
+        /// <summary>
+        /// Finds a custom column in the project view.
+        /// </summary>
+        /// <param name="columnHash">The hash of the column to find.</param>
+        /// <returns>The column if found, otherwise null.</returns>
+        public HPMProjectCustomColumnsColumn GetCustomColumn(uint columnHash)
+        {
+            return Session.ProjectGetCustomColumn(UniqueID, columnHash);
+        }
+
         // TODO: Subject to refactoring
         internal abstract EHPMReportViewType ReportViewType { get; }
     }

@@ -92,7 +92,7 @@ namespace Hansoft.ObjectWrapper
             {
                 hpmSession = HPMSdkSession.SessionOpen(server, port, database, sdkUser, sdkUserPwd, callbackHandler, callbackSemaphore, true, EHPMSdkDebugMode.Off, (IntPtr)null, 0, "", "", null);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 hpmSession = null;
             }

@@ -24,12 +24,12 @@ namespace Hansoft.ObjectWrapper
                                                                                                                                             {EHPMProjectDefaultColumn.ItemStatus,        6}, 
                                                                                                                                             {EHPMProjectDefaultColumn.Confidence,        4} };
   
-        internal static HansoftEnumValue FromInt(HPMUniqueID projectId, EHPMProjectDefaultColumn column, int iValue)
+        static HansoftEnumValue FromInt(HPMUniqueID projectId, EHPMProjectDefaultColumn column, int iValue)
         {
             return new HansoftEnumValue(projectId, column, iValue, iValue);
         }
 
-        internal static HansoftEnumValue FromString(HPMUniqueID projectId, EHPMProjectDefaultColumn column, string sValue)
+        public static HansoftEnumValue FromString(HPMUniqueID projectId, EHPMProjectDefaultColumn column, string sValue)
         {
             if (!maxColumnValuebyColumn.ContainsKey(column))
                 throw new ArgumentException("Unsupported default column in HansoftEnumValue.FromString/3: " + column);

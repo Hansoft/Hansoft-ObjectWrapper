@@ -100,7 +100,6 @@ namespace Hansoft.ObjectWrapper
             }
         }
 
-
         /// <summary>
         /// The number of remaining working days before the release date counted from tomorrow.
         /// </summary>

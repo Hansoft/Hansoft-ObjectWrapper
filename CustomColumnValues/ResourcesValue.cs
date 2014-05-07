@@ -37,6 +37,7 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return new ResourcesValue(task, customColumn, internalValue, resources);
         }
 
+
         internal static ResourcesValue FromResourceList(Task task, HPMProjectCustomColumnsColumn customColumn, List<Resource> resources)
         {
             string internalValue;

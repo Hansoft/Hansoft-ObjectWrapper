@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using HPMSdk;
 using Hansoft.ObjectWrapper.CustomColumnValues;
+using System.Collections;
 
 namespace Hansoft.ObjectWrapper
 {
@@ -315,6 +316,53 @@ namespace Hansoft.ObjectWrapper
             {
                 if (Risk != value) Session.TaskSetRisk(UniqueTaskID, (EHPMTaskRisk)value.Value);
             }
+        }
+
+        /// <summary>
+        /// The list of users that are assigned to this task.
+        /// </summary>
+        public List<User> Assignees
+        {
+            get
+            {
+                return TaskHelper.GetAssignees(this);
+            }
+        }
+
+        /// <summary>
+        /// Sets the resource assignments for this task. Assumes 100% allocation for each resource
+        /// </summary>
+        /// <param name="userNames">The list of user names as they are displayed in the Hansoft client. Assumes strings.</param>
+        public void SetResourceAssignmentsFromUserStrings(IList userNames)
+        {
+            Project project = Project.GetProject(MainProjectID);
+            List<Resource> resources = new List<Resource>();
+            foreach (string rs in userNames)
+            {
+                string trimmed = rs.Trim();
+                User user = project.Members.Find(u => u.Name == trimmed);
+                if (user != null)
+                    resources.Add(user);
+                else
+                {
+                    User groupMember = project.Members.Find(u => u.Groups.Find(g => g.Name == trimmed) != null);
+                    if (groupMember != null)
+                    {
+                        Group group = groupMember.Groups.Find(g => g.Name == trimmed);
+                        resources.Add(group);
+                    }
+                }
+            } 
+            HPMTaskResourceAllocation allocation = new HPMTaskResourceAllocation();
+            allocation.m_Resources = new HPMTaskResourceAllocationResource[resources.Count];
+            for (int i = 0; i < resources.Count; ++i)
+            {
+                allocation.m_Resources[i] = new HPMTaskResourceAllocationResource();
+                allocation.m_Resources[i].m_PercentAllocated = 100;
+                allocation.m_Resources[i].m_ResourceID = resources.ElementAt(i).UniqueID;
+            }
+            HPMUniqueID taskID = SdkSession.TaskRefGetTask(UniqueID);
+            Session.TaskSetResourceAllocation(taskID, allocation, true, EHPMTaskSetStatusFlag.None);
         }
 
         /// <summary>

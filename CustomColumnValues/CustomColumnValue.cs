@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using HPMSdk;
+using System.Collections;
 
 namespace Hansoft.ObjectWrapper.CustomColumnValues
 {
@@ -16,6 +17,48 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
         Task task;
         HPMProjectCustomColumnsColumn customColumn;
         string internalValue;
+
+        /// <summary>
+        /// Factory method to create a CustomColumnValue from a list of user representations (string) of custom column values in Hansoft.
+        /// Currently only implemented for MultipleSelection and Resources
+        /// </summary>
+        /// <param name="task">The task that the value belongs to.</param>
+        /// <param name="customColumn">The custom column that the value belongs to.</param>
+        /// <param name="internalValue">The list of strings</param>
+        /// <returns>The CustomColumn value corresponding to the given parameters.</returns>
+        public static CustomColumnValue FromStringList(Task task, HPMProjectCustomColumnsColumn customColumn, IList value)
+        {
+            switch (customColumn.m_Type)
+            {
+                case EHPMProjectCustomColumnsColumnType.MultiSelectionDropList:
+                    return MultipleSelectionValue.FromStringList(task, customColumn, value);
+                case EHPMProjectCustomColumnsColumnType.Resources:
+                    {
+                        Project project = Project.GetProject(task.MainProjectID);
+                        List<Resource> resources = new List<Resource>();
+                        foreach (string rs in value)
+                        {
+                            string trimmed = rs.Trim();
+                            User user = project.Members.Find(u => u.Name == trimmed);
+                            if (user != null)
+                                resources.Add(user);
+                            else
+                            {
+                                User groupMember = project.Members.Find(u => u.Groups.Find(g => g.Name == trimmed) != null);
+                                if (groupMember != null)
+                                {
+                                    Group group = groupMember.Groups.Find(g => g.Name == trimmed);
+                                    resources.Add(group);
+                                }
+                            }
+                        }
+
+                        return ResourcesValue.FromResourceList(task, customColumn, resources);
+                    }
+                default:
+                    return null;
+            }
+        }
 
         /// <summary>
         /// Factory method to create a CustomColumnValue from the internal endocding of custom column values in Hansoft.

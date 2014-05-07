@@ -45,16 +45,6 @@ namespace Hansoft.ObjectWrapper
             }
         }
 
-        /// <summary>
-        /// The list of users that are assigned to this Bug.
-        /// </summary>
-        public List<User> Assignees
-        {
-            get
-            {
-                return TaskHelper.GetAssignees(this);
-            }
-        }
 
         /// <summary>
         /// The assignment percentage of a particular User that is assigned to this Bug.

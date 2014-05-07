@@ -161,6 +161,20 @@ namespace Hansoft.ObjectWrapper
         }
 
         /// <summary>
+        /// Returns the user with the incoming name if it exists, otherwise null
+        /// </summary>
+        /// <param name="userName">The name of the user to find</param>
+        /// <returns>the user with the incoming name if it exists, otherwise null</returns>
+        public static User FindUser(string userName)
+        {
+            HPMUniqueID userID = SessionManager.Session.ResourceGetResourceFromName(userName);
+            if (userID.IsValid())
+                return User.GetUser(userID);
+            return null;
+        }
+
+        
+        /// <summary>
         /// The groups in the database that the SessionManager is connected to.
         /// </summary>
         /// <returns>The list of groups.</returns>

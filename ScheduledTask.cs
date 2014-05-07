@@ -33,16 +33,6 @@ namespace Hansoft.ObjectWrapper
             }
         }
 
-        /// <summary>
-        /// The list of users that are assigned to this scheduled task.
-        /// </summary>
-        public List<User> Assignees
-        {
-            get
-            {
-                return TaskHelper.GetAssignees(this);
-            }
-        }
 
         /// <summary>
         /// The Duaration of the task

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using HPMSdk;
+using System.Collections;
 
 namespace Hansoft.ObjectWrapper.CustomColumnValues
 {
@@ -36,6 +37,22 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             for (int i = 0; i < names.Length; i += 1)
             {
                 selections[i] = HPMUtilities.EncodeDroplistValue(names[i], customColumn.m_DropListItems);
+                if (sb.Length > 0)
+                    sb.Append(';');
+                sb.Append(selections[i].ToString());
+            }
+            string internalValue = sb.ToString();
+            return new MultipleSelectionValue(task, customColumn, internalValue, selections);
+        }
+
+        public static MultipleSelectionValue FromStringList(Task task, HPMProjectCustomColumnsColumn customColumn, IList names)
+        {
+
+            int[] selections = new int[names.Count];
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < names.Count; i += 1)
+            {
+                selections[i] = HPMUtilities.EncodeDroplistValue((string)names[i], customColumn.m_DropListItems);
                 if (sb.Length > 0)
                     sb.Append(';');
                 sb.Append(selections[i].ToString());

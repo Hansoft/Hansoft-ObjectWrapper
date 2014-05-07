@@ -41,17 +41,6 @@ namespace Hansoft.ObjectWrapper
         }
 
         /// <summary>
-        /// The list of users that are assigned to this product backlog item.
-        /// </summary>
-        public List<User> Assignees
-        {
-            get
-            {
-                return TaskHelper.GetAssignees(this);
-            }
-        }
-
-        /// <summary>
         /// The assignment percentage of a particular user that is assigned to this product backlog item.
         /// </summary>
         /// <param name="user">The name of the user.</param>

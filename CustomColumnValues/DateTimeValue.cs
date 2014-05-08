@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using HPMSdk;
+using System.Collections;
 
 namespace Hansoft.ObjectWrapper.CustomColumnValues
 {
@@ -69,6 +70,15 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             }
             else
                 return string.Empty;
+        }
+
+        /// <summary>
+        /// Method that converts a custom column value to a string list. (Not implemented)
+        /// </summary>
+        /// <returns>The CustomColumn value corresponding to the given parameters.</returns>
+        public override IList ToStringList()
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -139,5 +149,17 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
                     return InternalValue.CompareTo(obj.ToString());
             }
         }
+
+
+        /// <summary>
+        /// Implementation of IComparable
+        /// </summary>
+        /// <param name="obj">The other object to compare with.</param>
+        /// <returns>The result of the comparison</returns>
+        public override bool Equals(object obj)
+        {
+            return CompareTo(obj) == 0;
+        }
+
     }
 }

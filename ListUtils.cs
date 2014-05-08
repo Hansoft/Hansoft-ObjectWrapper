@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,6 +42,23 @@ namespace Hansoft.ObjectWrapper
                 sb.Append(item.Name);
             }
             return sb.ToString();
+        }
+
+
+        /// <summary>
+        /// Create a list (string) with the names of a list of HansoftItems. 
+        /// </summary>
+        /// <param name="items">The items to format.</param>
+        /// <param name="separator">The separator ro use</param>
+        /// <returns>A formatted string suitable for display.</returns>
+        public static IList ToStringList(IEnumerable<HansoftItem> items)
+        {
+            IList list = new List<string>();
+            foreach (HansoftItem item in items)
+            {
+                list.Add(item.Name);
+            }
+            return list;
         }
     }
 }

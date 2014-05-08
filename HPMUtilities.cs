@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 
 using HPMSdk;
+using System.Collections;
 
 namespace Hansoft.ObjectWrapper
 {
@@ -305,6 +306,20 @@ namespace Hansoft.ObjectWrapper
             return sb.ToString();
         }
 
+
+        internal static IList DecodeDroplistValuesToStringList(int[] iVals, HPMProjectCustomColumnsColumnDropListItem[] droplistItem)
+        {
+            IList list = new List<string>();
+            for (int i = 0; i < iVals.Length; i += 1)
+            {
+                string sVal = DecodeDroplistValue(iVals[i], droplistItem);
+                if (sVal != string.Empty)
+                {
+                    list.Add(sVal);
+                }
+            }
+            return list;
+        }
         internal static int EncodeDroplistValue(string sVal, HPMProjectCustomColumnsColumnDropListItem[] droplistItem)
         {
             for (int i = 0; i < droplistItem.Length; i += 1)

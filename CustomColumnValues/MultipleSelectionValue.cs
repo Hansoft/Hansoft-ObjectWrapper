@@ -77,6 +77,15 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
         }
 
         /// <summary>
+        /// Returns all the resources in the format of a string list.
+        /// </summary>
+        /// <returns>all the resources in the format of a string list</returns>
+        public override IList ToStringList()
+        {
+            return HPMUtilities.DecodeDroplistValuesToStringList(selections, CustomColumn.m_DropListItems);
+        }
+
+        /// <summary>
         /// Not Implemented.
         /// </summary>
         /// <returns>NotImplementedException</returns>
@@ -111,6 +120,16 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
         public override int CompareTo(object obj)
         {
             return this.ToString().CompareTo(obj.ToString());
+        }
+
+        /// <summary>
+        /// Implementation of IComparable
+        /// </summary>
+        /// <param name="obj">The other object to compare with.</param>
+        /// <returns>The result of the comparison</returns>
+        public override bool Equals(object obj)
+        {
+            return CompareTo(obj) == 0;
         }
 
     }

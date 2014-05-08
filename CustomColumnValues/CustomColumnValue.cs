@@ -60,6 +60,13 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             }
         }
 
+
+        /// <summary>
+        /// Method that converts a custom column value to a string list.
+        /// </summary>
+        /// <returns>The CustomColumn value corresponding to the given parameters.</returns>
+        public abstract IList ToStringList();
+
         /// <summary>
         /// Factory method to create a CustomColumnValue from the internal endocding of custom column values in Hansoft.
         /// </summary>
@@ -377,5 +384,13 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
         /// <param name="obj">The other object to compare with.</param>
         /// <returns>The result of the comparison</returns>
         abstract public int CompareTo(object obj);
+
+        /// <summary>
+        /// Implementation of IComparable
+        /// </summary>
+        /// <param name="obj">The other object to compare with.</param>
+        /// <returns>The result of the comparison</returns>
+        public override abstract bool Equals(object obj);
+
     }
 }

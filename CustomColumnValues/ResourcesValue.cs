@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using HPMSdk;
+using System.Collections;
 
 namespace Hansoft.ObjectWrapper.CustomColumnValues
 {
@@ -58,6 +59,7 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
             return new ResourcesValue(task, customColumn, internalValue, resources);
         }
 
+
         private ResourcesValue(Task task, HPMProjectCustomColumnsColumn customColumn, string internalValue, List<Resource> resources)
             : base(task, customColumn, internalValue)
         {
@@ -72,6 +74,16 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
         {
             return ListUtils.ToString(new List<HansoftItem>(resources), ';');
         }
+
+        /// <summary>
+        /// Returns all the resources in the format of a string list.
+        /// </summary>
+        /// <returns>all the resources in the format of a string list</returns>
+        public override IList ToStringList()
+        {
+            return ListUtils.ToStringList(new List<HansoftItem>(resources));
+        }
+
 
         /// <summary>
         /// Not Implemented.
@@ -108,6 +120,16 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
         public override int CompareTo(object obj)
         {
             return this.ToString().CompareTo(obj.ToString());
+        }
+
+        /// <summary>
+        /// Implementation of IComparable
+        /// </summary>
+        /// <param name="obj">The other object to compare with.</param>
+        /// <returns>The result of the comparison</returns>
+        public override bool Equals(object obj)
+        {
+            return CompareTo(obj) == 0;
         }
     }
 }

@@ -135,9 +135,9 @@ namespace Hansoft.ObjectWrapper.CustomColumnValues
         public override int CompareTo(object obj)
         {
             if (obj is DateTimeValue)
-                return ToDateTime().CompareTo(((DateValue)obj).ToDateTime());
-            else if (obj is DateValue)
                 return ToDateTime().CompareTo(((DateTimeValue)obj).ToDateTime());
+            else if (obj is DateValue)
+                return ToDateTime().CompareTo(((DateValue)obj).ToDateTime());
             else if (obj is DateTime)
                 return ToDateTime().CompareTo((DateTime)obj);
             else

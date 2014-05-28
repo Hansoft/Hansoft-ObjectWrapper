@@ -602,7 +602,7 @@ namespace Hansoft.ObjectWrapper
         /// </summary>
         public string Url
         {
-            get { return Session.UtilGetHansoftURL(UniqueID.m_ID.ToString()); }
+            get { return Session.UtilGetHansoftURL("Task/"+UniqueID.m_ID.ToString()); }
         }
 
         /// <summary>

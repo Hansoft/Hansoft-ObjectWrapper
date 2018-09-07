@@ -51,7 +51,7 @@ namespace Hansoft.ObjectWrapper
             {
                 HPMUniqueID qaProjectID = Session.ProjectUtilGetQA(UniqueID);
                 if (qaProjectID.m_ID == -1)
-                    qaProjectID = Session.ProjectOpenQAProjectBlock(UniqueID);
+                    qaProjectID = Session.ProjectUtilGetQA(UniqueID);
                 return qaProjectID;
             }
         }
@@ -62,7 +62,7 @@ namespace Hansoft.ObjectWrapper
             {
                 HPMUniqueID backlogProjectID = Session.ProjectUtilGetBacklog(UniqueID);
                 if (backlogProjectID.m_ID == -1)
-                    backlogProjectID = Session.ProjectOpenBacklogProjectBlock(UniqueID);
+                    backlogProjectID = Session.ProjectUtilGetBacklog(UniqueID);
                 return backlogProjectID;
             }
         }
@@ -381,7 +381,25 @@ namespace Hansoft.ObjectWrapper
 
         private void CloneColumns(HPMUniqueID sourceProjectID, HPMUniqueID targetProjectID)
         {
-            Session.ProjectCustomColumnsSet(targetProjectID, Session.ProjectCustomColumnsGet(sourceProjectID));
+            HPMProjectCustomColumns columns = Session.ProjectCustomColumnsGet(sourceProjectID);
+
+            HPMProjectCustomColumnChanges newColumns = new HPMProjectCustomColumnChanges();
+            newColumns.m_ProjectID = sourceProjectID;
+
+            List<HPMProjectCustomColumnsColumn> added = new List<HPMProjectCustomColumnsColumn>();
+       
+            foreach (HPMProjectCustomColumnsColumn column in columns.m_ShowingColumns)
+            {
+                added.Add(column);
+            }
+            foreach (HPMProjectCustomColumnsColumn column in columns.m_HiddenColumns)
+            {
+                added.Add(column);
+            }
+
+            newColumns.m_Added = added.ToArray();
+
+            Session.ProjectCustomColumnsSet(newColumns);
         }
 
         private void CloneReports(HPMUniqueID sourceProjectID, HPMUniqueID targetProjectID)
@@ -392,7 +410,8 @@ namespace Hansoft.ObjectWrapper
 
         private void ClonePresets(HPMUniqueID sourceProjectID, HPMUniqueID targetProjectID)
         {
-            Session.ProjectSetViewPresets(targetProjectID, Session.ProjectGetViewPresets(sourceProjectID));
+            foreach (HPMProjectViewPreset preset in Session.ProjectGetViewPresets(sourceProjectID).m_Presets)
+                Session.ProjectCreateViewPreset(targetProjectID, preset);
         }
 
         private void CloneWorkflows(HPMUniqueID sourceProjectID, HPMUniqueID targetProjectID)
